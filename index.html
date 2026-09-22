@@ -743,6 +743,98 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
 .sc-formula{font:11px 'JetBrains Mono',monospace; color:var(--dimmer); margin-bottom:4px; line-height:1.5;}
 #view-calc.quick .full-only{display:none !important;}
 
+/* ================= NEON GLOW UPGRADE — colorful cards / text / inputs ================= */
+.section-title{
+  color:var(--text);
+  background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,#FF4CC8 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:0 0 20px rgba(76,243,255,.4);
+  font-weight:700;
+}
+.section-title::before{content:'◆'; -webkit-text-fill-color:var(--cyan); margin-right:1px; filter:drop-shadow(0 0 6px var(--cyan));}
+
+h1,h2,h3{ text-shadow:0 0 14px rgba(76,125,255,.25); }
+
+/* generic glass cards get a rotating neon top-edge + ambient glow (kpi / sc keep their own meaningful colors) */
+.card:not(.kpi):not(.sc){ border-top-width:3px; border-top-style:solid; transition:box-shadow .3s, border-color .3s, transform .3s, filter .3s; }
+.card:not(.kpi):not(.sc):nth-of-type(6n+1){border-top-color:#4CF3FF; box-shadow:0 10px 32px rgba(6,10,20,.45), 0 0 22px -8px #4CF3FF;}
+.card:not(.kpi):not(.sc):nth-of-type(6n+2){border-top-color:#A56BFF; box-shadow:0 10px 32px rgba(6,10,20,.45), 0 0 22px -8px #A56BFF;}
+.card:not(.kpi):not(.sc):nth-of-type(6n+3){border-top-color:#FF4CC8; box-shadow:0 10px 32px rgba(6,10,20,.45), 0 0 22px -8px #FF4CC8;}
+.card:not(.kpi):not(.sc):nth-of-type(6n+4){border-top-color:#33FFB0; box-shadow:0 10px 32px rgba(6,10,20,.45), 0 0 22px -8px #33FFB0;}
+.card:not(.kpi):not(.sc):nth-of-type(6n+5){border-top-color:#FFC24C; box-shadow:0 10px 32px rgba(6,10,20,.45), 0 0 22px -8px #FFC24C;}
+.card:not(.kpi):not(.sc):nth-of-type(6n+0){border-top-color:#4C7DFF; box-shadow:0 10px 32px rgba(6,10,20,.45), 0 0 22px -8px #4C7DFF;}
+.card:not(.kpi):not(.sc):hover{ filter:brightness(1.14) saturate(1.35); transform:translateY(-2px); }
+
+/* non-accented inputs get a rotating neon glow to match — risk/reward/charges/pnl keep their meaningful red/green/amber/cyan */
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl):nth-of-type(6n+1){--fc:#4CF3FF;}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl):nth-of-type(6n+2){--fc:#A56BFF;}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl):nth-of-type(6n+3){--fc:#FF4CC8;}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl):nth-of-type(6n+4){--fc:#33FFB0;}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl):nth-of-type(6n+5){--fc:#FFC24C;}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl):nth-of-type(6n+0){--fc:#4C7DFF;}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) label{
+  color:var(--fc, var(--dim)); text-shadow:0 0 9px color-mix(in srgb, var(--fc, var(--cyan)) 55%, transparent);
+}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) input,
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) select,
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) textarea{
+  border-color:color-mix(in srgb, var(--fc, var(--cyan)) 38%, var(--line));
+  box-shadow:inset 0 0 12px -4px color-mix(in srgb, var(--fc, var(--cyan)) 30%, transparent);
+}
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) input:focus,
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) select:focus,
+.field:not(.accent-risk):not(.accent-reward):not(.accent-charges):not(.accent-pnl) textarea:focus{
+  border-color:var(--fc, var(--cyan)); box-shadow:0 0 0 3px color-mix(in srgb, var(--fc, var(--cyan)) 22%, transparent), 0 0 18px -2px var(--fc, var(--cyan));
+}
+
+/* buttons: idle glow + colorful ghost hover */
+.btn.ghost{border-color:rgba(165,107,255,.35);}
+.btn.ghost:hover{border-color:var(--violet); box-shadow:0 0 18px rgba(165,107,255,.3); color:var(--violet);}
+
+/* scenario card tag pills + kpi labels: brighter glow (keep their own semantic colours) */
+.sc .sc-tag{ box-shadow:0 0 10px -2px var(--sc); }
+.sc .sc-name{ text-shadow:0 0 10px var(--sc); }
+
+/* monospace assumption / code values: cyan glow so they read as "data", not plain grey */
+.calc-assump .v, .sc-formula, code, pre{ color:var(--cyan); text-shadow:0 0 8px rgba(76,243,255,.25); }
+
+/* bottom nav tabs — each tab glows its own neon colour when active */
+.tab:nth-of-type(7n+1).active{color:#4CF3FF; text-shadow:0 0 12px #4CF3FF;}
+.tab:nth-of-type(7n+2).active{color:#A56BFF; text-shadow:0 0 12px #A56BFF;}
+.tab:nth-of-type(7n+3).active{color:#FF4CC8; text-shadow:0 0 12px #FF4CC8;}
+.tab:nth-of-type(7n+4).active{color:#33FFB0; text-shadow:0 0 12px #33FFB0;}
+.tab:nth-of-type(7n+5).active{color:#FFC24C; text-shadow:0 0 12px #FFC24C;}
+.tab:nth-of-type(7n+6).active{color:#4C7DFF; text-shadow:0 0 12px #4C7DFF;}
+.tab:nth-of-type(7n+0).active{color:#FF7A4C; text-shadow:0 0 12px #FF7A4C;}
+.tab.active .tabicon{filter:drop-shadow(0 0 6px currentColor);}
+.tab:hover{color:var(--text);}
+
+/* segmented toggle groups (Risk/Profit, TP mode, Full/Quick, USD/INR…) — colourful active state, buy/sell keep their own */
+.seg:not(.buy):not(.sell):not(.side) button.on{
+  background:linear-gradient(120deg, var(--sc2,var(--cyan)), var(--sc1,var(--violet)));
+  box-shadow:0 0 16px -2px var(--sc2,var(--cyan));
+}
+.seg:not(.buy):not(.sell):not(.side):nth-of-type(4n+1){--sc1:#A56BFF; --sc2:#4CF3FF;}
+.seg:not(.buy):not(.sell):not(.side):nth-of-type(4n+2){--sc1:#FF4CC8; --sc2:#33FFB0;}
+.seg:not(.buy):not(.sell):not(.side):nth-of-type(4n+3){--sc1:#4C7DFF; --sc2:#FFC24C;}
+.seg:not(.buy):not(.sell):not(.side):nth-of-type(4n+0){--sc1:#33FFB0; --sc2:#A56BFF;}
+
+/* table headers + toolbar search/filter inputs */
+thead th{ color:var(--cyan); text-shadow:0 0 8px rgba(76,243,255,.3); border-bottom:1px solid rgba(76,243,255,.25); }
+.toolbar input, .toolbar select{ transition:.2s; }
+.toolbar input:focus, .toolbar select:focus{ border-color:var(--violet); box-shadow:0 0 0 3px rgba(165,107,255,.18), 0 0 16px -4px var(--violet); outline:none; }
+
+/* weekly calendar cells: subtle neon ring on hover/today beyond the existing cyan today-ring */
+.cal-cell{ transition:.2s; }
+.cal-cell:hover{ box-shadow:0 6px 18px rgba(0,0,0,.4), 0 0 16px -4px var(--violet); }
+
+/* KPI cards: always-on glow matching their good/bad/neutral colour (not just on hover) */
+.kpi{ border-color:rgba(140,165,255,.28); box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 16px -10px rgba(140,165,255,.4); }
+.kpi.good{ border-color:rgba(51,255,176,.45); box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 24px -9px rgba(51,255,176,.55); }
+.kpi.bad{ border-color:rgba(255,76,109,.45); box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 24px -9px rgba(255,76,109,.5); }
+.kpi.neutral{ border-color:rgba(76,243,255,.45); box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 24px -9px rgba(76,243,255,.5); }
+.kpi .label{ letter-spacing:1.2px; }
+
 </style>
 <meta name="theme-color" content="#0B1F3A">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4626,36 +4718,32 @@ const CALC_TP_TARGETS = [
   {key:'r20',  rr:2.0,  name:'1 : 2.00', emoji:'🟪', tag:'Balanced'},
   {key:'r25',  rr:2.5,  name:'1 : 2.50', emoji:'🟩', tag:'Aggressive'}
 ];
-// Solves a TP for a given target R:R (after fees), anchored to an already-computed,
-// valid SL scenario (sBase) for the SL leg / fee-rate context. Risk sizing: quantity is
-// fixed by the SL leg alone (same units as sBase), so every R:R target trades the same
-// size. Profit sizing: quantity is derived per target from Target Profit ÷ R:R, mirroring
-// the same implied-risk sizing used for the primary TP in calcScenario.
+// Computes the TP for a given target R:R, anchored to an already-computed, valid SL
+// scenario (sBase) for the SL leg / fee-rate context. TP is the straightforward,
+// before-fees target — Entry ± R:R × Price Risk (same as the SL card's own TP) — and
+// the achieved Net R:R (after fees) is returned alongside for transparency, without
+// changing where TP is placed. Risk sizing: quantity is fixed by the SL leg alone (same
+// units as sBase), so every R:R target trades the same size. Profit sizing: quantity is
+// derived per target from Target Profit ÷ profit-per-unit at that TP.
 function calcTpForRR(I, C, F, sBase, rr){
   const buy = I.side==='BUY', cs = C.contractSize, step = C.lotStep, minLots = C.minLots;
   const Fx = I.extraFee, fe = sBase.fe, fxTp = sBase.fxTp, fxSl = sBase.fxSl;
-  const lossPU = sBase.d + I.entry*fe + sBase.sl*fxSl;
+  const tp = cTickRound(buy ? I.entry + rr*sBase.d : I.entry - rr*sBase.d, C.tick, buy?'down':'up');
+  const tpDist = Math.abs(tp - I.entry);
+  if(!(tp>0) || !(tpDist>0)) return {status:'invalid', msg:'TP not valid for this direction — check inputs.'};
   let U;
   if(I.sizing==='risk'){
     U = sBase.units;
   } else {
+    const profPU = tpDist - I.entry*fe - tp*fxTp;
+    if(!(profPU>0)) return {status:'invalid', msg:'Not achievable: fees consume the whole move to TP.'};
     if(!(I.profit>0)) return {status:'invalid', msg:'Enter a valid Target Profit.'};
-    const impliedRisk = I.profit/rr;
-    if(impliedRisk <= Fx) return {status:'invalid', msg:'Not achievable at this R:R with current inputs.'};
-    const uExact = (impliedRisk - Fx)/lossPU;
-    let lots = cCeilStep(uExact/cs, step);
+    let lots = cCeilStep(((I.profit+Fx)/profPU)/cs, step);
     if(lots < minLots) lots = minLots;
     U = lots*cs;
   }
   if(!(U>0)) return {status:'invalid', msg:'Not achievable with current inputs.'};
   const netLoss = U*sBase.d + U*I.entry*fe + U*sBase.sl*fxSl + Fx;
-  const targetNetProfit = rr*netLoss;
-  const rawTp = buy
-    ? (targetNetProfit + Fx + U*I.entry*(1+fe)) / (U*(1-fxTp))
-    : (U*I.entry*(1-fe) - targetNetProfit - Fx) / (U*(1+fxTp));
-  const tp = cTickRound(rawTp, C.tick, buy?'down':'up');
-  const tpDist = Math.abs(tp - I.entry);
-  if(!(tp>0) || !(tpDist>0)) return {status:'invalid', msg:'TP not valid for this direction — check inputs.'};
   const entryFee = U*I.entry*fe, exitFeeTp = U*tp*fxTp;
   const grossProfit = U*tpDist;
   const feesProfit = entryFee + exitFeeTp + Fx;
@@ -4783,33 +4871,14 @@ function calcScenario(I, C, F, b){
     riskLotsFloor = cFloorStep(riskUnitsExact/cs, step);
   }
 
-  // TP
-  let profitUnitsExact = null;
+  // TP — the straightforward, before-fees R:R target: TP = Entry ± R:R × Price Risk.
+  // This is the technical target the trader is setting; the actual Net R:R (after fees)
+  // is computed and shown separately below (Gross / Net R:R) so fee drag is always visible,
+  // but it does NOT change where TP is placed.
   if(I.tpMode==='price'){
     s.tp = I.tpPrice;
-  } else if(I.sizing==='risk'){
-    // NET R:R: solve TP so netProfit / netLoss == target R:R, fees on both legs included —
-    // using the size this scenario will actually trade (forced up to the min lot if needed).
-    const U0 = (riskLotsFloor < minLots ? minLots : riskLotsFloor) * cs;
-    const netLoss0 = U0*s.d + U0*I.entry*fe + U0*s.sl*fxSl + Fx;
-    const targetNetProfit = I.rr*netLoss0;
-    const rawTp = buy
-      ? (targetNetProfit + Fx + U0*I.entry*(1+fe)) / (U0*(1-fxTp))
-      : (U0*I.entry*(1-fe) - targetNetProfit - Fx) / (U0*(1+fxTp));
-    s.tp = cTickRound(rawTp, C.tick, buy?'down':'up');
   } else {
-    // Profit-sizing + R:R target: also solved as a NET (after-fee) ratio, not a gross
-    // price-distance ratio — implied risk = Target Profit ÷ R:R, sized the same way the
-    // risk branch above sizes off Max Loss, then TP is solved so netProfit == Target Profit.
-    if(!(I.profit>0) || !(I.rr>0)){ s.status='invalid'; s.msg='Enter a valid Target Profit and R:R.'; return s; }
-    const impliedRisk = I.profit/I.rr;
-    if(impliedRisk <= Fx){ s.status='invalid'; s.msg='Not achievable: Target Profit ÷ R:R does not cover the fixed charges.'; return s; }
-    const U0 = (impliedRisk - Fx)/lossPU;
-    profitUnitsExact = U0;
-    const rawTp = buy
-      ? (I.profit + Fx + U0*I.entry*(1+fe)) / (U0*(1-fxTp))
-      : (U0*I.entry*(1-fe) - I.profit - Fx) / (U0*(1+fxTp));
-    s.tp = cTickRound(rawTp, C.tick, buy?'down':'up');
+    s.tp = cTickRound(buy ? I.entry + I.rr*s.d : I.entry - I.rr*s.d, C.tick, buy?'down':'up');
   }
   s.tpDist = Math.abs(s.tp - I.entry);
   if(!(s.tp>0) || !(s.tpDist>0)){ s.status='invalid'; s.msg='TP is not valid for this direction (must be > 0 and beyond Entry).'; return s; }
@@ -4818,8 +4887,6 @@ function calcScenario(I, C, F, b){
   let unitsExact;
   if(I.sizing==='risk'){
     unitsExact = riskUnitsExact;
-  } else if(I.tpMode==='rr'){
-    unitsExact = profitUnitsExact;
   } else {
     if(!(profPU>0)){ s.status='invalid'; s.msg='Not achievable with current inputs: fees consume the whole move to TP.'; return s; }
     unitsExact = (I.profit + Fx)/profPU;
