@@ -1432,7 +1432,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         <div class="field" data-f="atr"><label>ATR ($)</label><input type="number" inputmode="decimal" step="any" id="cAtr" placeholder="0.00"><div class="fmsg"></div></div>
         <div class="field" data-f="sizing" style="grid-column:span 1;"><label>Sizing Mode</label>
           <div class="seg full" id="cSizing"><button data-v="risk" class="on">Risk</button><button data-v="profit">Profit</button></div><div class="hint" id="cSizingHint"></div></div>
-        <div class="field" data-f="risk" id="cRiskWrap"><label id="cRiskLbl">Max Loss after fees ($)</label><input type="number" inputmode="decimal" step="any" id="cRisk" placeholder="0.00"><div class="hint money-hint"></div><div class="fmsg"></div></div>
+        <div class="field" data-f="risk" id="cRiskWrap"><label id="cRiskLbl">Max Loss after fees ($) <button type="button" id="cRiskLock" title="Locked — tap to unlock with password" style="margin-left:6px;cursor:pointer;background:none;border:1px solid #666;border-radius:4px;padding:0 6px;font-size:11px;line-height:18px;">🔒</button></label><input type="number" inputmode="decimal" step="any" id="cRisk" placeholder="0.00" readonly><div class="hint money-hint"></div><div class="hint" id="cRiskLockHint" style="font-size:10.5px;opacity:.75;">🔒 Locked: 4% of Account Capital or ₹360 minimum (whichever higher). Tap 🔒 to edit.</div><div class="fmsg"></div></div>
         <div class="field" data-f="profit" id="cProfitWrap" style="display:none;"><label id="cProfitLbl">Target Profit after fees ($)</label><input type="number" inputmode="decimal" step="any" id="cProfit" placeholder="0.00"><div class="hint money-hint"></div><div class="fmsg"></div></div>
         <div class="field" data-f="extraFee"><label id="cFeeLbl">Trading Fees / Other Charges ($)</label><input type="number" inputmode="decimal" step="any" id="cExtraFee" placeholder="2.50"><div class="hint money-hint"></div><div class="fmsg"></div></div>
 
@@ -4773,10 +4773,21 @@ function calcDefaultState(){
     cur:'USD', quick:false, sel:1,
     inp:{instrument:'BTCUSD', side:'BUY', entry:'', swingLow:'', swingHigh:'', atr:'', capitalUsd:'',
          sizing:'risk', riskUsd:'', profitUsd:'', extraFeeUsd:2.5, tpMode:'rr', rr:1.5, tpPrice:'',
-         feeRate:'', leverage:200, sizeMode:'lots', rate:85, notes:''},
+         feeRate:0, leverage:200, sizeMode:'lots', rate:85, notes:''},
     contracts: calcDefaultContracts(),
-    fee:{gst:18, entryType:'taker', tpType:'taker'}
+    fee:{gst:18, entryType:'taker', tpType:'taker'},
+    riskLocked:true
   };
+}
+// ---- Max Loss lock: enforced floor = 4% of Account Capital, or ₹360-equivalent minimum, whichever higher ----
+function calcRiskFloorUsd(){
+  const capUsd = cNum(calcState.inp.capitalUsd);
+  const minUsd = 360 / cRate();
+  const pctUsd = (!isNaN(capUsd) && capUsd > 0) ? capUsd * 0.04 : 0;
+  return +(Math.max(pctUsd, minUsd)).toFixed(6);
+}
+function calcApplyRiskLock(){
+  if(calcState.riskLocked){ calcState.inp.riskUsd = calcRiskFloorUsd(); }
 }
 let calcState = calcDefaultState();
 let calcHistory = [];
@@ -4970,7 +4981,8 @@ function calcLoad(){
           BTCUSD: Object.assign({}, def.contracts.BTCUSD, (s.contracts||{}).BTCUSD||{}),
           ETHUSD: Object.assign({}, def.contracts.ETHUSD, (s.contracts||{}).ETHUSD||{})
         },
-        fee: Object.assign({}, def.fee, s.fee||{})
+        fee: Object.assign({}, def.fee, s.fee||{}),
+        riskLocked: true // Max Loss always reloads locked; password required each session to unlock
       };
       if((s.v||0) < 3){ // v3: default fixed charge back to $2.50, default R:R 1:1.5
         if(cNum(calcState.inp.extraFeeUsd) === 0) calcState.inp.extraFeeUsd = 2.5;
@@ -4980,6 +4992,7 @@ function calcLoad(){
   }catch(e){ calcState = def; }
   try{ const h = localStorage.getItem(LS_CALC_HISTORY); calcHistory = h ? JSON.parse(h) : []; if(!Array.isArray(calcHistory)) calcHistory=[]; }
   catch(e){ calcHistory = []; }
+  calcApplyRiskLock();
 }
 // Live-market perf fix: while typing (e.g. fast-changing Entry Price), only the cheap
 // numeric recompute runs on every keystroke — the expensive DOM rebuild (scenario cards,
@@ -5041,6 +5054,7 @@ function calcCurInputs(){
 }
 const CALC_MONEY_FIELDS = {cRisk:'riskUsd', cProfit:'profitUsd', cExtraFee:'extraFeeUsd', cCapital:'capitalUsd'};
 function calcWriteInputs(){
+  calcApplyRiskLock();
   const i = calcState.inp, inr = calcState.cur==='INR', r = cRate();
   const setv = (id, v) => { const el = cEl(id); if(el) el.value = (v===''||v===null||v===undefined||(typeof v==='number'&&!isFinite(v))) ? '' : v; };
   const money = u => (u===''||isNaN(cNum(u))) ? '' : (inr ? +(u*r).toFixed(2) : +(+u).toFixed(6));
@@ -5060,7 +5074,11 @@ function calcSyncChrome(){
   cEl('cProfitWrap').style.display = i.sizing==='profit' ? '' : 'none';
   cEl('cRrWrap').style.display = i.tpMode==='rr' ? '' : 'none';
   cEl('cTpWrap').style.display = i.tpMode==='price' ? '' : 'none';
-  cEl('cRiskLbl').textContent = `Max Loss after fees (${sym})`;
+  cEl('cRiskLbl').firstChild.textContent = `Max Loss after fees (${sym}) `;
+  cEl('cRisk').readOnly = !!calcState.riskLocked;
+  cEl('cRisk').style.opacity = calcState.riskLocked ? '.75' : '1';
+  const rLock = cEl('cRiskLock'); if(rLock) rLock.textContent = calcState.riskLocked ? '🔒' : '🔓';
+  const rHint = cEl('cRiskLockHint'); if(rHint) rHint.style.display = calcState.riskLocked ? '' : 'none';
   cEl('cProfitLbl').textContent = `Target Profit after fees (${sym})`;
   cEl('cFeeLbl').textContent = `Trading Fees / Other Charges (${sym})`;
   cEl('cCapLbl').textContent = `Account Capital (${sym})`;
@@ -5090,11 +5108,16 @@ function calcReadInputs(){
   i.rate = cEl('cRate').value; i.notes = cEl('cNotes').value;
   const r = cRate();
   Object.entries(CALC_MONEY_FIELDS).forEach(([id, key])=>{
+    if(key==='riskUsd' && calcState.riskLocked) return; // Max Loss ignores manual DOM edits while locked
     const raw = cEl(id).value, n = cNum(raw);
     i[key] = isNaN(n) ? '' : (inr ? n/r : n);
   });
   const gst = cNum(cEl('cGst').value); calcState.fee.gst = isNaN(gst) ? 0 : gst;
   calcState.fee.entryType = cEl('cEntryType').value; calcState.fee.tpType = cEl('cTpType').value;
+  if(calcState.riskLocked){
+    calcApplyRiskLock();
+    const rEl = cEl('cRisk'); if(rEl) rEl.value = inr ? +(i.riskUsd*r).toFixed(2) : +(+i.riskUsd).toFixed(6);
+  }
 }
 
 // ---------------- CALCULATOR: compute + render ----------------
@@ -5445,12 +5468,15 @@ async function calcCopyResults(){
 // ---- reset / wipe / backup hooks ----
 function calcResetInputs(){
   const i = calcState.inp;
-  Object.assign(i, {entry:'', swingLow:'', swingHigh:'', atr:'', riskUsd:'', profitUsd:'', tpPrice:'', rr:1.5, feeRate:'', notes:''});
+  Object.assign(i, {entry:'', swingLow:'', swingHigh:'', atr:'', profitUsd:'', tpPrice:'', rr:1.5, feeRate:0, notes:''});
+  calcState.riskLocked = true; // Max Loss always re-locks to the enforced default on reset
+  calcApplyRiskLock();
   calcWriteInputs(); calcRenderAll(); calcSaveStateNow();
-  showToast('Inputs reset (capital, fee, leverage, settings kept)');
+  showToast('Inputs reset — Fee Rate → 0, Max Loss re-locked to default');
 }
 function calcResetAllData(){
   calcState = calcDefaultState(); calcHistory = []; calcLast = null;
+  calcApplyRiskLock();
   try{ localStorage.removeItem(LS_CALC_STATE); localStorage.removeItem(LS_CALC_HISTORY); }catch(e){}
   calcWriteInputs(); calcRenderAll();
 }
@@ -5504,6 +5530,18 @@ function calcBind(){
   });
   cEl('cEditAssump').addEventListener('click', ()=>{ const d = cEl('cAdv'); d.open = true; d.scrollIntoView({behavior:'smooth', block:'center'}); });
   cEl('cReset').addEventListener('click', calcResetInputs);
+  cEl('cRiskLock').addEventListener('click', ()=>{
+    if(calcState.riskLocked){
+      if(!checkPassword('unlock Max Loss for editing')) return;
+      calcState.riskLocked = false;
+      showToast('🔓 Max Loss unlocked — edit and it stays until next reset');
+    } else {
+      calcState.riskLocked = true;
+      calcApplyRiskLock();
+      showToast('🔒 Max Loss re-locked to default');
+    }
+    calcWriteInputs(); calcRenderAll(); calcSaveState();
+  });
   cEl('cCopy').addEventListener('click', calcCopyResults);
   cEl('cSave').addEventListener('click', calcSaveSetup);
   cEl('cScenarios').addEventListener('click', e=>{ const c = e.target.closest('.sc'); if(!c) return; calcState.sel = +c.dataset.i; calcRenderAll(); calcSaveState(); });
