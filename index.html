@@ -509,6 +509,47 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
 .empty{padding:50px 20px; text-align:center; color:var(--dim);}
 .empty .big{font-size:38px; margin-bottom:10px;}
 
+/* ---- Journal: view toggle + pagination + card view ---- */
+.jr-toolbar2{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+.jr-viewtoggle{display:flex; background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:11px; padding:4px;}
+.jr-viewbtn{padding:8px 16px; border-radius:8px; border:none; background:transparent; color:var(--dim); font-size:12.5px; font-weight:700; transition:.2s; cursor:pointer; font-family:inherit;}
+.jr-viewbtn.active{background:linear-gradient(135deg, rgba(76,243,255,.25), rgba(165,107,255,.2)); color:#fff; box-shadow:0 0 16px rgba(76,243,255,.3);}
+.jr-pagesize{display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--dim); flex-wrap:wrap;}
+.jr-pagesize input{width:60px; padding:8px 10px; border-radius:9px; background:rgba(255,255,255,.03); border:1px solid var(--line); color:var(--text); font-size:13px; text-align:center; font-family:'JetBrains Mono';}
+.jr-presets{display:flex; gap:6px;}
+.jr-preset{padding:6px 11px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--dim); font-size:11px; font-weight:700; cursor:pointer; transition:.2s; font-family:inherit;}
+.jr-preset:hover{border-color:var(--cyan); color:var(--cyan);}
+.jr-preset.active{background:rgba(76,243,255,.18); border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 10px rgba(76,243,255,.3);}
+.jr-total{font-family:'JetBrains Mono'; color:var(--text); font-weight:700;}
+
+.jr-pagebar{display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:18px;}
+.jr-pagebtn{min-width:34px; height:34px; padding:0 10px; border-radius:9px; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--text); font-size:12px; font-weight:700; transition:.2s; cursor:pointer; font-family:'JetBrains Mono';}
+.jr-pagebtn:hover:not(:disabled):not(.active){border-color:var(--cyan); box-shadow:0 0 12px rgba(76,243,255,.3); color:var(--cyan);}
+.jr-pagebtn.active{background:linear-gradient(135deg, rgba(76,243,255,.3), rgba(165,107,255,.22)); color:#fff; box-shadow:0 0 14px rgba(76,243,255,.4); border-color:transparent;}
+.jr-pagebtn:disabled{opacity:.3; cursor:not-allowed;}
+.jr-pagebtn.dots{border:none; background:none; cursor:default;}
+.jr-pageinfo{font-size:11px; color:var(--dim); text-align:center; margin-top:10px; letter-spacing:.2px;}
+
+.jr-cards{display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:16px;}
+.trcard{position:relative; padding:16px 18px; border-radius:16px; background:rgba(13,20,36,.55); border:1px solid var(--line); border-top-width:3px; border-top-style:solid; backdrop-filter:blur(10px); transition:.25s;}
+.trcard:hover{transform:translateY(-3px); filter:brightness(1.14) saturate(1.35);}
+.trcard:nth-of-type(6n+1){border-top-color:#4CF3FF; box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 18px -6px #4CF3FF;}
+.trcard:nth-of-type(6n+2){border-top-color:#A56BFF; box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 18px -6px #A56BFF;}
+.trcard:nth-of-type(6n+3){border-top-color:#FF4CC8; box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 18px -6px #FF4CC8;}
+.trcard:nth-of-type(6n+4){border-top-color:#33FFB0; box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 18px -6px #33FFB0;}
+.trcard:nth-of-type(6n+5){border-top-color:#FFC24C; box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 18px -6px #FFC24C;}
+.trcard:nth-of-type(6n+0){border-top-color:#4C7DFF; box-shadow:0 8px 26px rgba(6,10,20,.4), 0 0 18px -6px #4C7DFF;}
+.trcard .trc-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;}
+.trcard .trc-date{font-family:'JetBrains Mono'; font-size:11px; color:var(--dim); line-height:1.5;}
+.trcard .trc-pnl{font-family:'Space Grotesk'; font-weight:700; font-size:18px; text-align:right;}
+.trcard .trc-badges{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+.trcard .trc-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:7px 12px; font-size:12px; margin:10px 0; padding:10px 0; border-top:1px solid rgba(140,165,255,.08); border-bottom:1px solid rgba(140,165,255,.08);}
+.trcard .trc-grid .l{color:var(--dim); font-size:9.5px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;}
+.trcard .trc-grid .v{font-family:'JetBrains Mono'; font-weight:600;}
+.trcard .trc-notes{font-size:12px; color:var(--dim); margin-top:10px; font-family:'Inter'; line-height:1.5; white-space:pre-wrap;}
+.trcard .trc-cf{margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;}
+.trcard .trc-foot{display:flex; justify-content:flex-end; margin-top:12px;}
+
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important;}
   #cursorGlow{display:none;}
@@ -1653,11 +1694,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
           <option value="instrument">Sort: Instrument A→Z</option>
         </select>
       </div>
-      <div class="table-wrap"><table>
+      <div class="jr-toolbar2">
+        <div class="jr-viewtoggle">
+          <button type="button" class="jr-viewbtn active" id="jrViewTable">☰ Table</button>
+          <button type="button" class="jr-viewbtn" id="jrViewCards">▦ Cards</button>
+        </div>
+        <div class="jr-pagesize">
+          <span>Rows/page:</span>
+          <input type="number" id="jrPageSize" min="1" step="1" value="10">
+          <div class="jr-presets">
+            <button type="button" class="jr-preset" data-n="10">10</button>
+            <button type="button" class="jr-preset" data-n="25">25</button>
+            <button type="button" class="jr-preset" data-n="50">50</button>
+            <button type="button" class="jr-preset" data-n="100">100</button>
+            <button type="button" class="jr-preset" data-n="all">All</button>
+          </div>
+          <span>Showing <b class="jr-total" id="jrShowingCount">0</b> of <b class="jr-total" id="jrTotalCount">0</b></span>
+        </div>
+      </div>
+      <div class="table-wrap" id="jrTableWrap"><table>
         <thead><tr><th>Date</th><th>Time</th><th>Instrument</th><th>Segment</th><th>Setup</th><th>Entry</th><th>SL</th><th>Target</th><th>Qty</th><th>Risk</th><th>Reward</th><th>Charges</th><th>Result</th><th>P&L %</th><th>R</th><th>Rule</th><th>Notes</th><th></th></tr></thead>
         <tbody id="trTableBody"></tbody>
       </table></div>
+      <div class="jr-cards" id="jrCardsWrap" style="display:none;"></div>
       <div class="empty" id="trEmpty" style="display:none;"><div class="big">📒</div>No trades logged yet. Your first entry starts the equity curve.</div>
+      <div class="jr-pagebar" id="jrPageBar"></div>
+      <div class="jr-pageinfo" id="jrPageInfo"></div>
     </div>
   </div>
 
@@ -2488,7 +2550,22 @@ const LS_NOTIF_HISTORY = 'gp_setupgate_notif_history_v1';
 const LS_NOTIF_READ = 'gp_setupgate_notif_read_v1';
 const LS_WORK_REASON = 'gp_setupgate_work_reason_v1';
 const LS_SEED_VERSION = 'gp_setupgate_seed_version_v1';
+const LS_JOURNAL_UI = 'gp_setupgate_journal_ui_v1';
 const SEED_VERSION = 'seed-2026-09-04-23trades';
+let journalPage = 1, journalPageSize = 10, journalViewMode = 'table';
+function loadJournalUi(){
+  try{
+    const raw = localStorage.getItem(LS_JOURNAL_UI);
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s.pageSize==='all' || (Number.isFinite(+s.pageSize) && +s.pageSize>0)) journalPageSize = s.pageSize==='all'?'all':+s.pageSize;
+      if(s.viewMode==='table' || s.viewMode==='cards') journalViewMode = s.viewMode;
+    }
+  }catch(e){}
+}
+function saveJournalUi(){
+  try{ localStorage.setItem(LS_JOURNAL_UI, JSON.stringify({pageSize:journalPageSize, viewMode:journalViewMode})); }catch(e){}
+}
 const DEFAULT_WORK_REASON = "SUSHANT - AMOUNT TA 5 BHITARE DABAKU TRY KARIBA TK";
 
 async function loadData(){
@@ -2964,6 +3041,72 @@ function customFieldsSummary(t){
   return parts.join('');
 }
 
+function trCardHTML(t){
+  const r = computeR(t);
+  const rt = classifyResult(t);
+  const cfHtml = customFieldsSummary(t);
+  return `<div class="trcard">
+    <div class="trc-top">
+      <div class="trc-date">${t.date}${t.time?' · '+t.time:''}<br><span class="pill setup" style="color:${COLORS.amber}; background:rgba(255,194,76,.08); border-color:rgba(255,194,76,.3); margin-top:4px;">${t.instrument||'—'}</span></div>
+      <div class="trc-pnl" style="color:${t.result>0?COLORS.green:(t.result<0?COLORS.red:'inherit')};">${fmtMoney(t.result)}</div>
+    </div>
+    <div class="trc-badges">
+      <span class="pill ${resultPillClass(rt)}">${rt}</span>
+      <span class="pill setup">${t.setup||'—'}</span>
+      <span class="pill ${t.rule==='Yes'?'yes':'no'}">Rule: ${t.rule}</span>
+    </div>
+    <div class="trc-grid">
+      <div><div class="l">Segment</div><div class="v">${t.segment||'—'}</div></div>
+      <div><div class="l">Qty</div><div class="v">${t.qty||1}</div></div>
+      <div><div class="l">Entry</div><div class="v">${t.entry||''}</div></div>
+      <div><div class="l">SL</div><div class="v">${t.sl||''}</div></div>
+      <div><div class="l">Target</div><div class="v">${t.target||''}</div></div>
+      <div><div class="l">R</div><div class="v" style="color:${r>0?COLORS.green:(r<0?COLORS.red:'inherit')}">${r!==null?r.toFixed(2)+'R':'—'}</div></div>
+      <div><div class="l">Risk</div><div class="v">${fmtMoney(t.risk)}</div></div>
+      <div><div class="l">Reward</div><div class="v">${fmtMoney(t.reward||0)}</div></div>
+      <div><div class="l">Charges</div><div class="v">${fmtMoney(t.charges||0)}</div></div>
+      <div><div class="l">P&amp;L %</div><div class="v" style="color:${t.pnlPct>0?COLORS.green:(t.pnlPct<0?COLORS.red:'inherit')}">${t.pnlPct!==undefined && t.pnlPct!==0 ? t.pnlPct.toFixed(2)+'%' : (t.pnlPct===0?'0.00%':'—')}</div></div>
+    </div>
+    ${t.notes?`<div class="trc-notes">${t.notes}</div>`:''}
+    ${cfHtml?`<div class="trc-cf">${cfHtml}</div>`:''}
+    <div class="trc-foot"><button class="rowedit" data-id="${t.id}" data-type="tr">✎ Edit</button></div>
+  </div>`;
+}
+
+function jrPageCount(total){ return journalPageSize==='all' ? 1 : Math.max(1, Math.ceil(total / journalPageSize)); }
+
+function renderJrPageBar(total){
+  const bar = $('#jrPageBar'), info = $('#jrPageInfo');
+  const totalPages = jrPageCount(total);
+  if(journalPage > totalPages) journalPage = totalPages;
+  if(journalPageSize==='all' || totalPages<=1){
+    bar.innerHTML = '';
+    info.textContent = total ? `Showing all ${total} of ${total} trades` : 'No trades to show';
+    return;
+  }
+  const start = (journalPage-1)*journalPageSize + 1;
+  const end = Math.min(journalPage*journalPageSize, total);
+  info.textContent = `Showing ${start}–${end} of ${total} trades · Page ${journalPage} of ${totalPages}`;
+  let nums = [];
+  const add = n => nums.push(n);
+  if(totalPages<=7){ for(let i=1;i<=totalPages;i++) add(i); }
+  else{
+    add(1);
+    if(journalPage>3) add('…');
+    for(let i=Math.max(2,journalPage-1); i<=Math.min(totalPages-1,journalPage+1); i++) add(i);
+    if(journalPage<totalPages-2) add('…');
+    add(totalPages);
+  }
+  bar.innerHTML =
+    `<button type="button" class="jr-pagebtn" id="jrPrev" ${journalPage<=1?'disabled':''}>‹ Prev</button>` +
+    nums.map(n=> n==='…' ? `<button type="button" class="jr-pagebtn dots" disabled>…</button>` :
+      `<button type="button" class="jr-pagebtn${n===journalPage?' active':''}" data-page="${n}">${n}</button>`).join('') +
+    `<button type="button" class="jr-pagebtn" id="jrNext" ${journalPage>=totalPages?'disabled':''}>Next ›</button>`;
+  $('#jrPrev')?.addEventListener('click', ()=>{ journalPage--; renderJournalTable(); });
+  $('#jrNext')?.addEventListener('click', ()=>{ journalPage++; renderJournalTable(); });
+  bar.querySelectorAll('button[data-page]').forEach(b=> b.addEventListener('click', ()=>{ journalPage = +b.dataset.page; renderJournalTable(); }));
+}
+
 function renderJournalTable(){
   const body = $('#trTableBody');
   const search = $('#trSearch').value.toLowerCase();
@@ -2990,7 +3133,19 @@ function renderJournalTable(){
     default: rows.sort((a,b)=> dtKey(b).localeCompare(dtKey(a))); // newest first
   }
   $('#trEmpty').style.display = trades.length? 'none':'block';
-  body.innerHTML = rows.map(t=>{
+
+  // ---- pagination (view-only slice — filters/sort above already ran on the FULL dataset,
+  // and exports/reports read straight from `trades`, so no data is ever lost, only paged) ----
+  const total = rows.length;
+  const totalPages = jrPageCount(total);
+  if(journalPage > totalPages) journalPage = totalPages;
+  if(journalPage < 1) journalPage = 1;
+  const pageRows = journalPageSize==='all' ? rows : rows.slice((journalPage-1)*journalPageSize, journalPage*journalPageSize);
+
+  $('#jrTotalCount').textContent = total;
+  $('#jrShowingCount').textContent = pageRows.length;
+
+  body.innerHTML = pageRows.map(t=>{
     const r = computeR(t);
     const rt = classifyResult(t);
     const cfHtml = customFieldsSummary(t);
@@ -3016,9 +3171,43 @@ function renderJournalTable(){
       <td><button class="rowedit" data-id="${t.id}" data-type="tr">✎ Edit</button></td>
     </tr>`;
   }).join('');
+
+  $('#jrCardsWrap').innerHTML = pageRows.map(trCardHTML).join('');
+  renderJrPageBar(total);
 }
-['trSearch'].forEach(id=>$('#'+id).addEventListener('input', renderJournalTable));
-['trSetupFilter','trResultFilter','trInstrumentFilter','trSegmentFilter','trSortFilter'].forEach(id=>$('#'+id).addEventListener('change', renderJournalTable));
+['trSearch'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ journalPage=1; renderJournalTable(); }));
+['trSetupFilter','trResultFilter','trInstrumentFilter','trSegmentFilter','trSortFilter'].forEach(id=>$('#'+id).addEventListener('change', ()=>{ journalPage=1; renderJournalTable(); }));
+
+function setJournalViewMode(mode){
+  journalViewMode = mode;
+  $('#jrTableWrap').style.display = mode==='table' ? '' : 'none';
+  $('#jrCardsWrap').style.display = mode==='cards' ? '' : 'none';
+  $('#jrViewTable').classList.toggle('active', mode==='table');
+  $('#jrViewCards').classList.toggle('active', mode==='cards');
+  saveJournalUi();
+}
+function setJournalPageSize(val){
+  journalPageSize = val==='all' ? 'all' : Math.max(1, parseInt(val,10) || 10);
+  journalPage = 1;
+  $('#jrPageSize').value = journalPageSize==='all' ? '' : journalPageSize;
+  $('#jrPageSize').placeholder = journalPageSize==='all' ? 'All' : '10';
+  document.querySelectorAll('.jr-preset').forEach(b=> b.classList.toggle('active', b.dataset.n === String(journalPageSize)));
+  saveJournalUi();
+  renderJournalTable();
+}
+function initJournalUi(){
+  setJournalViewMode(journalViewMode);
+  $('#jrPageSize').value = journalPageSize==='all' ? '' : journalPageSize;
+  $('#jrPageSize').placeholder = journalPageSize==='all' ? 'All' : '10';
+  document.querySelectorAll('.jr-preset').forEach(b=> b.classList.toggle('active', b.dataset.n === String(journalPageSize)));
+  $('#jrViewTable').addEventListener('click', ()=>{ setJournalViewMode('table'); });
+  $('#jrViewCards').addEventListener('click', ()=>{ setJournalViewMode('cards'); });
+  $('#jrPageSize').addEventListener('change', ()=>{
+    const v = $('#jrPageSize').value.trim();
+    setJournalPageSize(v==='' ? 10 : v);
+  });
+  document.querySelectorAll('.jr-preset').forEach(b=> b.addEventListener('click', ()=> setJournalPageSize(b.dataset.n)));
+}
 
 document.addEventListener('click', e=>{
   const btn = e.target.closest('.rowedit');
@@ -5884,6 +6073,8 @@ async function init(){
     try{ const raw = localStorage.getItem(LS_ANA_KPIS); anaCustomKpis = raw? JSON.parse(raw) : []; }catch(e){ anaCustomKpis = []; }
     loadNotifState();
     loadWorkReason();
+    loadJournalUi();
+    initJournalUi();
     renderCustomFieldsForm();
     renderChecklistTable();
     renderJournalTable();
