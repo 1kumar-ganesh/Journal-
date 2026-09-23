@@ -1440,7 +1440,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         <div class="field full-only" data-f="leverage"><label>Leverage (x)</label><input type="number" inputmode="decimal" step="any" id="cLev" placeholder="200"><div class="fmsg"></div></div>
         <div class="field full-only" data-f="tpMode"><label>Take Profit By</label>
           <div class="seg full" id="cTpMode"><button data-v="rr" class="on">R:R</button><button data-v="price">TP Price</button></div></div>
-        <div class="field full-only" data-f="rr" id="cRrWrap"><label>Target R:R (1 : x)</label><input type="number" inputmode="decimal" step="any" id="cRr" placeholder="1.5"><div class="fmsg"></div></div>
+        <div class="field full-only" data-f="rr" id="cRrWrap"><label>Target Net R:R (1 : x, after fees)</label><input type="number" inputmode="decimal" step="any" id="cRr" placeholder="2"><div class="fmsg"></div></div>
         <div class="field full-only" data-f="tpPrice" id="cTpWrap" style="display:none;"><label>TP Price ($)</label><input type="number" inputmode="decimal" step="any" id="cTp" placeholder="0.00"><div class="fmsg"></div></div>
         <div class="field full-only" data-f="feeRate"><label>Fee Rate % (optional override)</label><input type="number" inputmode="decimal" step="any" id="cFeeRate" placeholder="auto: Taker/Maker"><div class="fmsg"></div></div>
         <div class="field full-only" data-f="sizeMode"><label>Show Size As</label>
@@ -4718,27 +4718,64 @@ const CALC_TP_TARGETS = [
   {key:'r20',  rr:2.0,  name:'1 : 2.00', emoji:'🟪', tag:'Balanced'},
   {key:'r25',  rr:2.5,  name:'1 : 2.50', emoji:'🟩', tag:'Aggressive'}
 ];
-// Computes the TP for a given target R:R, anchored to an already-computed, valid SL
-// scenario (sBase) for the SL leg / fee-rate context. TP is the straightforward,
-// before-fees target — Entry ± R:R × Price Risk (same as the SL card's own TP) — and
-// the achieved Net R:R (after fees) is returned alongside for transparency, without
-// changing where TP is placed. Risk sizing: quantity is fixed by the SL leg alone (same
-// units as sBase), so every R:R target trades the same size. Profit sizing: quantity is
-// derived per target from Target Profit ÷ profit-per-unit at that TP.
+// ---- Solve TP price so a target NET R:R (after fees) is hit exactly ----
+// Given a fixed position size U, and the fees on entry (fe) and on the TP exit (fxTp),
+// find the TP price whose resulting Net Profit equals requiredNetProfit.
+// Derivation (BUY): netProfit = U*(tp-entry) - U*entry*fe - U*tp*fxTp - Fx
+//   => tp = (requiredNetProfit + U*entry*(1+fe) + Fx) / (U*(1-fxTp))
+// Derivation (SELL): netProfit = U*(entry-tp) - U*entry*fe - U*tp*fxTp - Fx
+//   => tp = (U*entry*(1-fe) - Fx - requiredNetProfit) / (U*(1+fxTp))
+function calcSolveTpForNetProfit(buy, entry, fe, fxTp, Fx, U, requiredNetProfit){
+  return buy
+    ? (requiredNetProfit + U*entry*(1+fe) + Fx) / (U*(1-fxTp))
+    : (U*entry*(1-fe) - Fx - requiredNetProfit) / (U*(1+fxTp));
+}
+// Same idea but solving for a target profit-PER-UNIT (used when sizing is by Target
+// Profit, where the unit count itself depends on the TP placement — see calcTpForRR
+// and calcScenario for how the target per-unit figure is derived).
+function calcSolveTpForProfitPerUnit(buy, entry, fe, fxTp, profPU){
+  return buy
+    ? (profPU + entry*(1+fe)) / (1-fxTp)
+    : (entry*(1-fe) - profPU) / (1+fxTp);
+}
+// Computes the TP for a given target NET R:R (after fees), anchored to an already-computed,
+// valid SL scenario (sBase) for the SL leg / fee-rate context. TP is solved backwards so the
+// achieved Net R:R equals the target exactly (before lot-size rounding of the final size):
+// required Net Profit = target Net R:R × Net Loss, then required Gross Profit = required Net
+// Profit + fees, and TP is placed at the price that yields that Gross Profit. Risk sizing:
+// quantity is fixed by the SL leg alone (same units as sBase), so every R:R target trades the
+// same size. Profit sizing: quantity is derived per target from Target Profit ÷ profit-per-unit
+// at that TP, with Target Profit itself treated as the desired NET profit.
 function calcTpForRR(I, C, F, sBase, rr){
   const buy = I.side==='BUY', cs = C.contractSize, step = C.lotStep, minLots = C.minLots;
   const Fx = I.extraFee, fe = sBase.fe, fxTp = sBase.fxTp, fxSl = sBase.fxSl;
-  const tp = cTickRound(buy ? I.entry + rr*sBase.d : I.entry - rr*sBase.d, C.tick, buy?'down':'up');
+  const lossPU = sBase.d + I.entry*fe + sBase.sl*fxSl;
+  let tp, U;
+  if(I.sizing==='risk'){
+    // Units are fixed by the SL leg alone (independent of TP) — use the SAME final,
+    // lot-rounded size as the SL card so the achieved Net R:R is exact.
+    U = sBase.units;
+    if(!(U>0)) return {status:'invalid', msg:'Not achievable with current inputs.'};
+    const netLoss = U*sBase.d + U*I.entry*fe + U*sBase.sl*fxSl + Fx;
+    const requiredNetProfit = rr*netLoss;
+    tp = calcSolveTpForNetProfit(buy, I.entry, fe, fxTp, Fx, U, requiredNetProfit);
+  } else {
+    // Target Profit is the desired NET profit; find the profit-per-unit that, once sized,
+    // makes Net Loss = (target Net Profit)/(target Net R:R), then solve TP from it.
+    if(!(I.profit>0)) return {status:'invalid', msg:'Enter a valid Target Profit.'};
+    const requiredNetLoss = I.profit/rr;
+    const Uest = (requiredNetLoss - Fx)/lossPU;
+    if(!(Uest>0)) return {status:'invalid', msg:'Not achievable: target R:R too tight for the fixed charges.'};
+    const profPU = (I.profit + Fx)/Uest;
+    tp = calcSolveTpForProfitPerUnit(buy, I.entry, fe, fxTp, profPU);
+  }
+  tp = cTickRound(tp, C.tick, buy?'down':'up');
   const tpDist = Math.abs(tp - I.entry);
   if(!(tp>0) || !(tpDist>0)) return {status:'invalid', msg:'TP not valid for this direction — check inputs.'};
-  let U;
-  if(I.sizing==='risk'){
-    U = sBase.units;
-  } else {
-    const profPU = tpDist - I.entry*fe - tp*fxTp;
-    if(!(profPU>0)) return {status:'invalid', msg:'Not achievable: fees consume the whole move to TP.'};
-    if(!(I.profit>0)) return {status:'invalid', msg:'Enter a valid Target Profit.'};
-    let lots = cCeilStep(((I.profit+Fx)/profPU)/cs, step);
+  if(I.sizing!=='risk'){
+    const profPUFinal = tpDist - I.entry*fe - tp*fxTp;
+    if(!(profPUFinal>0)) return {status:'invalid', msg:'Not achievable: fees consume the whole move to TP.'};
+    let lots = cCeilStep(((I.profit+Fx)/profPUFinal)/cs, step);
     if(lots < minLots) lots = minLots;
     U = lots*cs;
   }
@@ -4772,7 +4809,7 @@ function calcDefaultState(){
   return {
     cur:'USD', quick:false, sel:1,
     inp:{instrument:'BTCUSD', side:'BUY', entry:'', swingLow:'', swingHigh:'', atr:'', capitalUsd:'',
-         sizing:'risk', riskUsd:'', profitUsd:'', extraFeeUsd:2.5, tpMode:'rr', rr:1.5, tpPrice:'',
+         sizing:'risk', riskUsd:'', profitUsd:'', extraFeeUsd:2.5, tpMode:'rr', rr:2, tpPrice:'',
          feeRate:0, leverage:200, sizeMode:'lots', rate:85, notes:''},
     contracts: calcDefaultContracts(),
     fee:{gst:18, entryType:'taker', tpType:'taker'},
@@ -4882,14 +4919,32 @@ function calcScenario(I, C, F, b){
     riskLotsFloor = cFloorStep(riskUnitsExact/cs, step);
   }
 
-  // TP — the straightforward, before-fees R:R target: TP = Entry ± R:R × Price Risk.
-  // This is the technical target the trader is setting; the actual Net R:R (after fees)
-  // is computed and shown separately below (Gross / Net R:R) so fee drag is always visible,
-  // but it does NOT change where TP is placed.
+  // TP — solved BACKWARDS from the target NET R:R (after fees), not the gross price move.
+  // Steps: 1) required Net Profit = target Net R:R × Net Loss (after fees). 2) add fees
+  // back to get the required Gross Profit. 3) place TP at the exact price that delivers
+  // that Gross Profit. This makes the achieved Net R:R equal the target R:R (before any
+  // final lot-size rounding of the position, same as everywhere else in this calculator).
   if(I.tpMode==='price'){
     s.tp = I.tpPrice;
+  } else if(I.sizing==='risk'){
+    // Units are fixed by the SL leg alone, independent of TP — use the final, lot-rounded
+    // size so the Net Loss (and hence the required Net Profit) is the exact number shown.
+    let Ufinal = riskLotsFloor;
+    if(Ufinal < minLots) Ufinal = minLots;
+    Ufinal = Ufinal*cs;
+    const netLossFinal = Ufinal*s.d + Ufinal*I.entry*fe + Ufinal*s.sl*fxSl + Fx;
+    const requiredNetProfit = I.rr*netLossFinal;
+    s.tp = cTickRound(calcSolveTpForNetProfit(buy, I.entry, fe, fxTp, Fx, Ufinal, requiredNetProfit), C.tick, buy?'down':'up');
   } else {
-    s.tp = cTickRound(buy ? I.entry + I.rr*s.d : I.entry - I.rr*s.d, C.tick, buy?'down':'up');
+    // sizing==='profit': Target Profit is treated as the desired NET profit. Solve the
+    // profit-per-unit needed so that, once sized to hit that target Net Profit exactly,
+    // the resulting Net Loss makes Net Profit / Net Loss equal the target Net R:R.
+    if(!(I.profit>0)){ s.status='invalid'; s.msg='Enter a valid Target Profit.'; return s; }
+    const requiredNetLoss = I.profit/I.rr;
+    const Uest = (requiredNetLoss - Fx)/lossPU;
+    if(!(Uest>0)){ s.status='invalid'; s.msg='Not achievable: target R:R too tight for the fixed charges.'; return s; }
+    const profPUTarget = (I.profit + Fx)/Uest;
+    s.tp = cTickRound(calcSolveTpForProfitPerUnit(buy, I.entry, fe, fxTp, profPUTarget), C.tick, buy?'down':'up');
   }
   s.tpDist = Math.abs(s.tp - I.entry);
   if(!(s.tp>0) || !(s.tpDist>0)){ s.status='invalid'; s.msg='TP is not valid for this direction (must be > 0 and beyond Entry).'; return s; }
@@ -5468,7 +5523,7 @@ async function calcCopyResults(){
 // ---- reset / wipe / backup hooks ----
 function calcResetInputs(){
   const i = calcState.inp;
-  Object.assign(i, {entry:'', swingLow:'', swingHigh:'', atr:'', profitUsd:'', tpPrice:'', rr:1.5, feeRate:0, notes:''});
+  Object.assign(i, {entry:'', swingLow:'', swingHigh:'', atr:'', profitUsd:'', tpPrice:'', rr:2, feeRate:0, notes:''});
   calcState.riskLocked = true; // Max Loss always re-locks to the enforced default on reset
   calcApplyRiskLock();
   calcWriteInputs(); calcRenderAll(); calcSaveStateNow();
